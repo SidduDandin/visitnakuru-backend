@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
+import { PrismaClient, Prisma } from '@prisma/client';
+import { z, ZodError } from 'zod';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -62,17 +62,18 @@ router.post('/', async (req, res) => {
     });
 
     res.status(201).json(user);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ 
-        error: 'Validation failed', 
-        details: error.errors 
+  } catch (error: unknown) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: error.issues, // ✅ fixed
       });
     }
 
-    // Handle Prisma unique constraint error
-    if (error.code === 'P2002') {
-      return res.status(409).json({ error: 'Email already exists' });
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        return res.status(409).json({ error: 'Email already exists' });
+      }
     }
 
     console.error('Error creating user:', error);
@@ -96,20 +97,21 @@ router.put('/:id', async (req, res) => {
     });
 
     res.json(user);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ 
-        error: 'Validation failed', 
-        details: error.errors 
+  } catch (error: unknown) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: error.issues, // ✅ fixed
       });
     }
 
-    if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    if (error.code === 'P2002') {
-      return res.status(409).json({ error: 'Email already exists' });
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      if (error.code === 'P2002') {
+        return res.status(409).json({ error: 'Email already exists' });
+      }
     }
 
     console.error('Error updating user:', error);
@@ -130,9 +132,11 @@ router.delete('/:id', async (req, res) => {
     });
 
     res.status(204).send();
-  } catch (error) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'User not found' });
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        return res.status(404).json({ error: 'User not found' });
+      }
     }
 
     console.error('Error deleting user:', error);
