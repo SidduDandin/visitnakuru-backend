@@ -182,7 +182,7 @@ router.post("/forgot-password", async (req, res) => {
             <!-- Header with logo -->
             <tr>
               <td style="padding:20px; text-align:center; background:#2A7B7B;">
-                <img src="https://visitnakuru-ui.vercel.app/logo.png" alt="Logo" width="80" style="border-radius:50%; background:#fff; padding:5px;" />
+                <img src="https://visitnakuru-ui.vercel.app/visitnakuru.jpg" alt="Logo" width="80" style="border-radius:50%; background:#fff; padding:5px;" />
               </td>
             </tr>
 
@@ -191,7 +191,7 @@ router.post("/forgot-password", async (req, res) => {
               <td style="padding:30px 40px; text-align:left; color:#333;">
                 <h2 style="margin:0 0 15px; font-size:22px; color:#2A7B7B;">Password Reset Request</h2>
                 <p style="margin:0 0 20px; font-size:16px; line-height:1.5;">
-                  Hello,<br/><br/>
+                  Hello Admin,<br/><br/>
                   We received a request to reset your password. Click the button below to reset it. 
                   This link will expire in <strong>1 hour</strong>.
                 </p>
