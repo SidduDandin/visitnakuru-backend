@@ -2,7 +2,7 @@ import express from "express"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import { PrismaClient } from "@prisma/client"
-import sgMail from "@sendgrid/mail"
+import nodemailer from "nodemailer"
 
 const router = express.Router()
 const prisma = new PrismaClient()
@@ -131,71 +131,116 @@ router.post("/change-password", async (req, res) => {
 })
 
 // 🔑 forgot Password
-sgMail.setApiKey(process.env.SENDGRID_API_KEY || "")
 
 router.post("/forgot-password", async (req, res) => {
   const { email } = req.body
   if (!email) return res.status(400).json({ error: "Email is required" })
 
   try {
-    // Case-insensitive lookup
-    const admin = await prisma.admin.findFirst({
-      where: { email: { equals: email, mode: "insensitive" } }
-    })
+    // Check if user exists
+    const admin = await prisma.admin.findUnique({ where: { email } })
 
+    // Security: don’t reveal if user exists
     if (admin) {
-      // Generate reset token (valid 1h)
+      // Generate reset token
       const token = jwt.sign(
         { id: admin.id },
         process.env.JWT_SECRET || "supersecret",
         { expiresIn: "1h" }
       )
-      console.log(token)
+
+      // Example reset link
       const resetLink = `${process.env.FRONTEND_URL}/admin-login/reset-password/${token}`
 
-      const msg = {
+      // Send email (using Nodemailer here)
+      const transporter = nodemailer.createTransport({
+        service: "Gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      })
+
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
         to: email,
-        from: process.env.EMAIL_FROM || "ramu@aalpha.net", // must be verified in SendGrid
-        subject: "Password Reset Request",
-        html: `
-          <p>You requested a password reset.</p>
-          <p>Click the link below to reset your password (valid for 1 hour):</p>
-          <a href="${resetLink}">${resetLink}</a>
-        `,
-      }
+        subject: "Password Reset",
+        html:  `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Password Reset</title>
+  </head>
+  <body style="margin:0; padding:0; background-color:#f5f5f5; font-family:Arial, sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f5f5f5; padding:20px 0;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+            
+            <!-- Header with logo -->
+            <tr>
+              <td style="padding:20px; text-align:center; background:#2A7B7B;">
+                <img src="https://visitnakuru-ui.vercel.app/logo.png" alt="Logo" width="80" style="border-radius:50%; background:#fff; padding:5px;" />
+              </td>
+            </tr>
 
-      try {
-        await sgMail.send(msg)
-        console.log("Email sent to:", email)
-      } catch (sendErr: unknown) {
-  if (sendErr instanceof Error) {
-    console.error("SendGrid error:", sendErr.message)
+            <!-- Body -->
+            <tr>
+              <td style="padding:30px 40px; text-align:left; color:#333;">
+                <h2 style="margin:0 0 15px; font-size:22px; color:#2A7B7B;">Password Reset Request</h2>
+                <p style="margin:0 0 20px; font-size:16px; line-height:1.5;">
+                  Hello,<br/><br/>
+                  We received a request to reset your password. Click the button below to reset it. 
+                  This link will expire in <strong>1 hour</strong>.
+                </p>
 
-    // Type assertion for SendGrid error
-    const sgError = sendErr as { response?: { body?: any } }
-    if (sgError.response?.body) {
-      console.error("SendGrid response body:", sgError.response.body)
+                <!-- Button -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin:25px auto;">
+                  <tr>
+                    <td bgcolor="#2A7B7B" style="border-radius:6px;">
+                      <a href="${resetLink}" target="_blank" style="display:inline-block; padding:12px 25px; font-size:16px; color:#ffffff; text-decoration:none; border-radius:6px; background:#2A7B7B; font-weight:bold;">
+                        Reset Password
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:20px 0 0; font-size:14px; color:#666;">
+                  If you didn’t request this, you can safely ignore this email.
+                </p>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="padding:15px; text-align:center; font-size:12px; color:#999; background:#fafafa; border-top:1px solid #eee;">
+                © ${new Date().getFullYear()} Visit Nakuru. All rights reserved.<br/>
+                <a href="https://visitnakuru.com" style="color:#2A7B7B; text-decoration:none;">Visit our website</a>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>
+  `,
+      })
     }
-  } else {
-    console.error("Unexpected error sending email:", sendErr)
-  }
 
-  return res.status(500).json({
-    error: "Failed to send reset email. Check SendGrid configuration."
-  })
-}
-    }
-
-    // Always return success message to avoid leaking user info
     return res.json({
       message: "If this email exists, a reset link has been sent.",
     })
   } catch (err) {
-    console.error("Forgot password error:", err)
+    console.error(err)
     return res.status(500).json({ error: "Something went wrong" })
   }
 })
 
+// 🔑 reset Password
 router.post("/reset-password/:token", async (req, res) => {
   const { token } = req.params
   const { password } = req.body
