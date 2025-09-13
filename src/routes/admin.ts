@@ -2,6 +2,7 @@ import express from "express"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import { PrismaClient } from "@prisma/client"
+import sgMail from "@sendgrid/mail"
 
 const router = express.Router()
 const prisma = new PrismaClient()
@@ -126,6 +127,108 @@ router.post("/change-password", async (req, res) => {
   } catch (err) {
     console.error(err)
     return res.status(401).json({ error: "Invalid or expired token" })
+  }
+})
+
+// 🔑 forgot Password
+sgMail.setApiKey(process.env.SENDGRID_API_KEY || "")
+
+router.post("/forgot-password", async (req, res) => {
+  const { email } = req.body
+  if (!email) return res.status(400).json({ error: "Email is required" })
+
+  try {
+    // Case-insensitive lookup
+    const admin = await prisma.admin.findFirst({
+      where: { email: { equals: email, mode: "insensitive" } }
+    })
+
+    if (admin) {
+      // Generate reset token (valid 1h)
+      const token = jwt.sign(
+        { id: admin.id },
+        process.env.JWT_SECRET || "supersecret",
+        { expiresIn: "1h" }
+      )
+      console.log(token)
+      const resetLink = `${process.env.FRONTEND_URL}/admin-login/reset-password/${token}`
+
+      const msg = {
+        to: email,
+        from: process.env.EMAIL_FROM || "ramu@aalpha.net", // must be verified in SendGrid
+        subject: "Password Reset Request",
+        html: `
+          <p>You requested a password reset.</p>
+          <p>Click the link below to reset your password (valid for 1 hour):</p>
+          <a href="${resetLink}">${resetLink}</a>
+        `,
+      }
+
+      try {
+        await sgMail.send(msg)
+        console.log("Email sent to:", email)
+      } catch (sendErr: unknown) {
+  if (sendErr instanceof Error) {
+    console.error("SendGrid error:", sendErr.message)
+
+    // Type assertion for SendGrid error
+    const sgError = sendErr as { response?: { body?: any } }
+    if (sgError.response?.body) {
+      console.error("SendGrid response body:", sgError.response.body)
+    }
+  } else {
+    console.error("Unexpected error sending email:", sendErr)
+  }
+
+  return res.status(500).json({
+    error: "Failed to send reset email. Check SendGrid configuration."
+  })
+}
+    }
+
+    // Always return success message to avoid leaking user info
+    return res.json({
+      message: "If this email exists, a reset link has been sent.",
+    })
+  } catch (err) {
+    console.error("Forgot password error:", err)
+    return res.status(500).json({ error: "Something went wrong" })
+  }
+})
+
+router.post("/reset-password/:token", async (req, res) => {
+  const { token } = req.params
+  const { password } = req.body
+
+  if (!password) {
+    return res.status(400).json({ error: "Password is required" })
+  }
+
+  try {
+    // Verify token
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "supersecret"
+    ) as any
+
+    const adminId = decoded.id
+    if (!adminId) {
+      return res.status(400).json({ error: "Invalid token" })
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    // Update Prisma
+    await prisma.admin.update({
+      where: { id: adminId },
+      data: { password: hashedPassword },
+    })
+
+    return res.json({ message: "Password reset successful. You can now log in." })
+  } catch (err) {
+    console.error("Reset password error:", err)
+    return res.status(400).json({ error: "Invalid or expired token" })
   }
 })
 
