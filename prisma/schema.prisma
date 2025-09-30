@@ -41,3 +41,118 @@ model Admin {
 
   @@map("tbl_admin")
 }
+
+model Blog {
+  id            Int      @id @default(autoincrement())
+  title         String
+  content       String
+  author        String
+  tags          String[]
+  featuredImage String? 
+  createdAt     DateTime @default(now())
+
+  @@map("blog")
+}
+
+model Partner {
+  id            String        @id @default(cuid())
+  businessName  String
+  contactPerson String
+  email         String        @unique
+  phone         String
+  category      String        // e.g. Hotel, Lodge, Tour Operator
+  website       String?       
+  socialLinks   Json?         // store as JSON array of links
+
+  // Relations
+  documents     Document[]
+  media         Media[]
+  systemChecks  SystemCheck[]
+  applications  Application[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Application {
+  id          String   @id @default(cuid())
+  partnerId   String
+  partner     Partner  @relation(fields: [partnerId], references: [id])
+  status      AppStatus @default(PENDING)
+  notes       String?
+  reviewedBy  String?   // admin user id
+  reviewedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum AppStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVISION_REQUIRED
+}
+
+model Document {
+  id          String   @id @default(cuid())
+  partnerId   String
+  partner     Partner  @relation(fields: [partnerId], references: [id])
+  type        DocType
+  url         String
+  status      DocStatus @default(UPLOADED)
+  verifiedAt  DateTime?
+  verifiedBy  String?   // admin user id
+  createdAt   DateTime  @default(now())
+}
+
+enum DocType {
+  BUSINESS_REGISTRATION
+  TOURISM_LICENSE
+  KRA_PIN
+  ID_PASSPORT
+  HEALTH_SAFETY
+  INSURANCE
+}
+
+enum DocStatus {
+  UPLOADED
+  VALID
+  INVALID
+  FLAGGED
+}
+
+model Media {
+  id          String   @id @default(cuid())
+  partnerId   String
+  partner     Partner  @relation(fields: [partnerId], references: [id])
+  type        MediaType
+  url         String
+  createdAt   DateTime  @default(now())
+}
+
+enum MediaType {
+  PHOTO
+  VIDEO
+}
+
+model SystemCheck {
+  id          String   @id @default(cuid())
+  partnerId   String
+  partner     Partner  @relation(fields: [partnerId], references: [id])
+  type        CheckType
+  status      CheckStatus
+  details     String?
+  createdAt   DateTime  @default(now())
+}
+
+enum CheckType {
+  FILE_FORMAT
+  KRA_VERIFICATION
+  DUPLICATE_DETECTION
+}
+
+enum CheckStatus {
+  PASS
+  FAIL
+  WARNING
+}

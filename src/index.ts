@@ -6,6 +6,9 @@ import { PrismaClient } from '@prisma/client';
 import userRoutes from './routes/users';
 import healthRoutes from './routes/health';
 import adminRoutes from "./routes/admin";
+import blogRoutes from "./routes/blog";
+import partnerRouter from "./routes/partner";
+import path from 'path';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -24,11 +27,13 @@ app.use(cors({
 }))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Routes
 app.use('/api/health', healthRoutes);
 app.use('/api/users', userRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/blog", blogRoutes);
+app.use("/api/partner", partnerRouter)
 
 // Global error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

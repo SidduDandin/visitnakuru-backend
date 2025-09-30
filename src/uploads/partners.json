@@ -1,0 +1,47 @@
+[
+  {
+    "category": "Hotel",
+    "businessName": "The Lakeview Hotel",
+    "contactPerson": "Siddu Dandin",
+    "email": "dandinsiddu@gmail.com",
+    "phone": "09008223545",
+    "website": "https://lakenakuruhotel.com",
+    "socialLinks": "https://www.facebook.com/LakeNakuruHotel",
+    "documents": [
+      "/uploads/documents/documents-1759230286507-993448151.png",
+      "/uploads/documents/documents-1759230286561-296113075.png",
+      "/uploads/documents/documents-1759230286622-349625936.png",
+      "/uploads/documents/documents-1759230286652-219117542.png",
+      "/uploads/documents/documents-1759230286694-643905255.png",
+      "/uploads/documents/documents-1759230286695-472138153.png"
+    ],
+    "media": [],
+    "submittedAt": "2025-09-30T11:04:46.724Z",
+    "status": "Pending Verification"
+  },
+  {
+    "category": "Hotel",
+    "businessName": "The Lakeview Hotel",
+    "contactPerson": "Siddu Dandin",
+    "email": "dandinsiddu@gmail.com",
+    "phone": "09008223545",
+    "website": "https://lakenakuruhotel.com",
+    "socialLinks": "https://www.facebook.com/LakeNakuruHotel",
+    "documents": [
+      "/uploads/documents/documents-1759230299779-103346559.png",
+      "/uploads/documents/documents-1759230299793-446641215.png",
+      "/uploads/documents/documents-1759230299799-520018807.png",
+      "/uploads/documents/documents-1759230299800-509815271.png",
+      "/uploads/documents/documents-1759230299802-952328438.png",
+      "/uploads/documents/documents-1759230299802-629261710.png"
+    ],
+    "media": [
+      "/uploads/media/media-1759230299806-162460385.png",
+      "/uploads/media/media-1759230299807-380080809.png",
+      "/uploads/media/media-1759230299815-939404097.png",
+      "/uploads/media/media-1759230299818-675159602.png"
+    ],
+    "submittedAt": "2025-09-30T11:04:59.821Z",
+    "status": "Pending Verification"
+  }
+]
