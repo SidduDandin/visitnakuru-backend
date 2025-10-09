@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model tbl_admin {
+  id        String   @id @default(uuid())
+  fullname  String?
+  username  String
+  email     String   @unique
+  password  String
+  phoneNumber String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  status    Int?
+  resetToken              String?
+  resetTokenExpires       DateTime?
+}
+
+model tbl_contact {
+  ContactId String @id @default(uuid())
+  ContactName String
+  ContactEmail String
+  ContactPhoneNumber String
+  ContactSubject String
+  ContactMessage String
+  ContactDate DateTime @default(now())
+}
+
+
+model tbl_cms {
+  CmsId          String @id @default(uuid())
+  CmsPageName    String @unique
+  CmsText_en     String   // English (default)
+  CmsText_es     String?  // Spanish
+  CmsText_fr     String?  // French
+  CmsText_de     String?  // German
+  CmsText_zh     String?  // Chinese
+}
+
+
+model tbl_newslettersubscriber{
+  NLSubID String @id @default(uuid())
+  EmailAddress String @unique
+  createdAt  DateTime @default(now())
+}
+
+model tbl_banner{
+  BannerID    String   @id @default(uuid())
+  BannerImage String 
+  BannerTitle_en String? 
+  BannerTitle_es String?
+  BannerTitle_fr String?
+  BannerTitle_de String?
+  BannerTitle_zh String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+
+

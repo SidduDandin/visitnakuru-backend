@@ -1,0 +1,13 @@
+<h1>New Contact Message</h1>
+<p>You have received a new message from the contact form.</p>
+<hr style="border: none; border-top: 1px solid #ccc; margin: 20px 0;">
+<div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px;">
+    <p><strong>Name:</strong> {{name}}</p>
+    <p><strong>Email:</strong> {{email}}</p>
+    {{#if phoneNumber}}
+        <p><strong>Phone:</strong> {{phoneNumber}}</p>
+    {{/if}}
+    <p><strong>Subject:</strong> {{subject}}</p>
+    <p><strong>Message:</strong></p>
+    <p style="padding: 10px; border-left: 3px solid #3B82F6; background-color: #ffffff; white-space: pre-wrap;">{{message}}</p>
+</div>
