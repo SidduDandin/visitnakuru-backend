@@ -11,8 +11,8 @@ const PORT = process.env.PORT || 5000;
 
 // ✅ Dynamic CORS: allows both local dev & production frontend
 const allowedOrigins = [
-    'http://localhost:3000',             // Local Next.js frontend
-    // 'https://visitnakuru-ui.vercel.app'                                   // Production frontend (change to your real domain)
+    //'http://localhost:3000',             // Local Next.js frontend
+     'https://visitnakuru-ui.vercel.app'                                   // Production frontend (change to your real domain)
 ];
 
 app.use(cors({
