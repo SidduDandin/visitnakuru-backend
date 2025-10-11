@@ -69,5 +69,53 @@ model tbl_banner{
   updatedAt   DateTime @updatedAt
 }
 
+model tbl_partner {
+  PartnerID        Int       @id @default(autoincrement())
+  BusinessName     String
+  ContactPerson    String
+  Email            String
+  Phone            String
+  Category         String
+  Subcategory      String
+  PhysicalAddress  String
+  MapLink          String
+  ShortDescription String
+  OperatingHours   String
+  FullDescription  String
+  Status           String    @default("Pending")
+  CreatedAt        DateTime  @default(now())
+
+  Documents tbl_partner_documents[]
+  Photos    tbl_partner_photos[]
+  Videos    tbl_partner_videos[]
+}
+
+model tbl_partner_documents {
+  DocumentID Int      @id @default(autoincrement())
+  PartnerID  Int
+  FilePath   String
+  FileName   String
+  CreatedAt  DateTime @default(now())
+  tbl_partner tbl_partner @relation(fields: [PartnerID], references: [PartnerID], onDelete: Cascade)
+}
+
+model tbl_partner_photos {
+  PhotoID   Int      @id @default(autoincrement())
+  PartnerID Int
+  FilePath  String
+  FileName  String
+  CreatedAt DateTime @default(now())
+  tbl_partner tbl_partner @relation(fields: [PartnerID], references: [PartnerID], onDelete: Cascade)
+}
+
+model tbl_partner_videos {
+  VideoID   Int      @id @default(autoincrement())
+  PartnerID Int
+  FilePath  String
+  FileName  String
+  CreatedAt DateTime @default(now())
+  tbl_partner tbl_partner @relation(fields: [PartnerID], references: [PartnerID], onDelete: Cascade)
+}
+
 
 

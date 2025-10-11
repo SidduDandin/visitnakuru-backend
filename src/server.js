@@ -11,8 +11,8 @@ const PORT = process.env.PORT || 5000;
 
 // ✅ Dynamic CORS: allows both local dev & production frontend
 const allowedOrigins = [
-   // 'http://localhost:3000',             // Local Next.js frontend
-     'https://visitnakuru-ui.vercel.app'                                   // Production frontend (change to your real domain)
+    'http://localhost:3000',             // Local Next.js frontend
+    // 'https://visitnakuru-ui.vercel.app'                                   // Production frontend (change to your real domain)
 ];
 
 app.use(cors({
@@ -54,6 +54,7 @@ const newslettersubscriber = require('./routes/newsletterRoutes');
 
 const bannerRoutes =require('./routes/bannerRoutes');
 
+const partnerRoutes =require('./routes/partnerRoutes');
 
 // Mount authentication routes
 // All routes defined in authRoutes.js will be prefixed with '/api/auth'
@@ -67,6 +68,7 @@ app.use('/api/newslettersubscriber',newslettersubscriber);
 
 app.use('/api/admin/banners',bannerRoutes);
 
+app.use('/api/partners', partnerRoutes);
 // Basic route to confirm the server is running
 app.get('/', (req, res) => {
     res.send('Admin Backend API is running!');
